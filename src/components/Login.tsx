@@ -1,8 +1,11 @@
 import React, { useState } from "react";
+import axios from "axios";
 import SoftBackdrop from "./SoftBackdrop";
 
 const Login = () => {
   const [state, setState] = useState("login");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -15,8 +18,32 @@ const Login = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const url =
+        state === "login"
+          ? "http://localhost:3000/api/auth/login"
+          : "http://localhost:3000/api/auth/register";
+
+      const response = await axios.post(url, formData, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("Success:", response.data);
+      setFormData({ name: "", email: "", password: "" });
+    } catch (err: any) {
+      console.error("Error:", err.response?.data || err.message);
+      setError(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -126,11 +153,20 @@ const Login = () => {
             </button>
           </div>
 
+          {error && <div className="mt-4 text-red-400 text-sm">{error}</div>}
+
           <button
             type="submit"
-            className="mt-2 w-full h-11 rounded-full text-white bg-pink-600 hover:bg-pink-500 transition "
+            disabled={loading}
+            className="mt-2 w-full h-11 rounded-full text-white bg-pink-600 hover:bg-pink-500 transition disabled:opacity-50"
           >
-            {state === "login" ? "Login" : "Sign up"}
+            {loading
+              ? state === "login"
+                ? "Logging in..."
+                : "Signing up..."
+              : state === "login"
+                ? "Login"
+                : "Sign up"}
           </button>
 
           <p
