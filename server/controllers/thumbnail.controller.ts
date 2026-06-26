@@ -8,6 +8,7 @@ import {
 import ai from "../config/ai.js";
 import path from "node:path";
 import fs from "node:fs";
+import { v2 as cloudinary } from "cloudinary";
 
 const stylePrompts = {
   "Bold & Graphic":
@@ -133,6 +134,33 @@ export const generateThumbnail = async (req: Request, res: Response) => {
     fs.mkdirSync("images", { recursive: true });
     fs.writeFileSync(filePath, finalBuffer!);
 
-    
-  } catch (error) {}
+    const uploadResult = await cloudinary.uploader.upload(filePath, {
+      resource_type: "image",
+    });
+
+    thumbnail.image_url = uploadResult.url;
+    thumbnail.isGenerating = false;
+    await thumbnail.save();
+
+    res.json({ message: "Thumbnail Generated", thumbnail });
+
+    fs.unlinkSync(filePath);
+  } catch (error: any) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteThumbnail = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.session;
+
+    await Thumbnail.findByIdAndDelete({ _id: id, userId });
+
+    res.json({ message: "Thumbnail deleted successfully" });
+  } catch (error: any) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
 };
