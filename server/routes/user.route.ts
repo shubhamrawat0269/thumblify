@@ -3,7 +3,7 @@ import { getThumbnailById, getUsersThumbnails } from "../controllers/user.contro
 
 const UserRouter = express.Router();
 
-UserRouter.post("/thumbnails", getUsersThumbnails);
+UserRouter.get("/thumbnails", getUsersThumbnails);
 UserRouter.delete("/thumbnail/:id", getThumbnailById);
 
 export default UserRouter;
