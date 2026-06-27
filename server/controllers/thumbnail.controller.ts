@@ -114,7 +114,7 @@ export const generateThumbnail = async (req: Request, res: Response) => {
       config: generationConfig,
     });
 
-    if (!response?.canditates?.[0]?.content?.parts) {
+    if (!response?.candidates?.[0]?.content?.parts) {
       throw new Error("Unexpected response");
     }
 
